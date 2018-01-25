@@ -1,0 +1,91 @@
+	<div id="wrapper">
+        <%- partial("../layout/left") %>
+		<div id="page-wrapper">
+			<div class="row">
+				<div class="col-lg-12">
+					<h1 class="page-header"><%=big_title%></h1>
+				</div>
+				<!-- /.col-lg-12 -->
+			</div>
+			<!-- /.row -->
+
+			<!-- /.row -->
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<%=bar_title%>
+						</div>
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-lg-6">
+									<form role="form" id="form_validation" action="<%=link_to_submit%>" method="POST" >
+
+<%-: {id_name:"subject", is_readonly:false, input_ch: "主旨" } |create_input %>
+<%-: {is_require:false, is_readonly:false,    input_ch:"秘密副本", id_name:"bcc"}|create_textarea %>
+<%-: {is_require:false, is_readonly:false,    input_ch:"內文", id_name:"html"}|create_textarea %>
+
+										<a href="<%=link_to_list%>" class="btn btn-default">取消</a>
+										<button type="submit" class="btn btn-primary"><%=submit_but%></button>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+		<!-- /#page-wrapper -->
+
+	</div>
+	<!-- /#wrapper -->
+
+<script>
+
+$().ready(function(){
+
+		//補上相關欄位
+    check_default('textarea', 'bcc', '<%= findData %>');
+
+		// 表單驗證後刪除不需要的欄位
+	  removeFormCol('#form_validation','', '');
+		// form表單處理put
+	  supportSubmit('#form_validation', 'post', '<%=mail_to_submit%>', '<%=link_to_list%>');
+
+		// form表單使用ajaxform跑api
+	  function supportSubmit(formID, type, apiUrl, redirectUrl) {
+	    $(formID).ajaxForm({
+	      type: type,
+	      url: apiUrl,
+	      success: function(data){
+	        console.log("send ok",data);
+					if(data.result.success) {
+						swal({
+							title: "寄送成功!",
+							type: "success"
+						},
+						function() {
+							location.reload();
+						})
+					}
+	      },
+	      error: function(err){
+	        console.log("send err",err);
+					swal("寄送失敗")
+	      }
+	    });
+	  }
+
+    //補上驗證
+    var input_validation = {
+        // 驗證規則
+        rules: {
+					subject: {required: true},
+					html: {required: true}
+				}
+    }
+    check_vailidation( input_validation );
+
+});
+</script>

@@ -1,0 +1,59 @@
+  <div id="wrapper">
+    <%- partial("../layout/left") %>
+  <div id="page-wrapper">
+    <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header"><%=big_title%></h1>
+    </div>
+    <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+
+    <!-- /.row -->
+    <div class="row">
+    <div class="col-lg-12">
+      <div class="panel panel-default">
+      <div class="panel-heading">
+        <%=bar_title%>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+        <div class="col-lg-6">
+          <form role="form" id="form_validation" action="<%=link_to_submit%>" method="POST">
+
+<%-: {is_require:true, is_readonly:false,    input_ch:sails.__({ phrase: 'question type', locale: sails.config.myconf.lang[0] }), id_name:"question_type"}|create_input %>
+<%-: {is_require:true, is_readonly:false,    input_ch:sails.__({ phrase: 'status', locale: sails.config.myconf.lang[0] }), id_name:"status"}|create_input %>
+<%-: {id_name:"customer_pk", id_value: req.session.user.account } |create_hidden %>
+
+          <a href="<%=link_to_list%>" class="btn btn-default">取消</a>
+          <button type="submit" class="btn btn-primary"><%=submit_but%></button>
+          </form>
+        </div>
+        </div>
+      </div>
+      </div>
+    </div>
+    </div>
+
+  </div>
+  <!-- /#page-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+
+<script>
+
+$().ready(function(){
+
+    //補上驗證
+    var input_validation = {
+        // 驗證規則
+        rules: {
+            question_type: {required:true},
+            status: {required: true},
+        }
+    }
+    check_vailidation( input_validation );
+
+});
+</script>

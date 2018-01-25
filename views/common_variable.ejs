@@ -1,0 +1,872 @@
+<script>
+  //這邊是共用JS
+
+  //產生連續圖(向下著色) 因為只有用一次 就寫死其他資訊
+  function continue_diagram(input_data) {
+    Morris.Area({
+      element: 'morris-area-chart',
+      data: input_data,
+      xkey: 'datetime',
+      ykeys: ['TEMP'],
+      labels: ['溫度'],
+      pointSize: 2,
+      hideHover: 'auto',
+      resize: true
+    });
+    Morris.Area({
+      element: 'morris-area-chart2',
+      data: input_data,
+      xkey: 'datetime',
+      ykeys: ['HUMD'],
+      labels: ['濕度'],
+      pointSize: 2,
+      hideHover: 'auto',
+      resize: true
+    });
+  }
+
+  //產生折線圖
+  function continue_line(input_data) {
+    Morris.Line({
+      element: 'morris-line-chart',
+      data: input_data,
+      xkey: 'datetime',
+      ykeys: ['success', 'fail'],
+      labels: ['成功', '失敗'],
+      hideHover: 'auto',
+      resize: true
+    });
+  }
+
+
+  //為了不使用英文版的datatable 乾脆自己重跑一次
+  function create_datatable(input_id) {
+    $('#' + input_id).DataTable({
+      // "scrollX": true,
+      'oLanguage': {
+        'sProcessing': '處理中...',
+        'sLengthMenu': '顯示 _MENU_ 項結果',
+        'sZeroRecords': '沒有匹配結果',
+        'sInfo': '(資料庫共有 _TOTAL_ 筆資料。)',
+        'sInfoEmpty': '顯示第 0 至 0 項結果，共 0 項',
+        'sInfoFiltered': '顯示第 0 至 0 項結果，共 0 項',
+        'sSearch': '搜索: ',
+        'oPaginate': {
+          'sFirst': '首頁',
+          'sPrevious': '上頁',
+          'sNext': '下頁',
+          'sLast': '尾頁'
+        }
+      }
+    });
+  }
+
+  //ajax版本的datatable
+  function create_ajaxtable(input_id, ajaxurl, column_array, createdRowData, callbackData) {
+    $('#' + input_id).DataTable({
+      "order": [[0, "desc"]],
+      "bLengthChange": true,
+      "iDisplayLength": 10,
+      "aLengthMenu": [10, 20, 50],
+      "bDestroy": true,
+      "bProcessing": true,
+      "bServerSide": true,
+      "sAjaxSource": ajaxurl,
+      "aoColumns": column_array,
+      "bPaginate": true,
+      "createdRow": createdRowData,
+      "drawCallback": callbackData,
+      "bAutoWidth": false,
+      'oLanguage': {
+        'sProcessing': '處理中...',
+        'sLengthMenu': '顯示 _MENU_ 項結果',
+        'sZeroRecords': '沒有匹配結果',
+        'sInfo': "顯示第 _START_ 至 _END_ 結果，共 _MAX_ 項",
+        'sInfoEmpty': '顯示第 0 至 0 項結果，共 0 項',
+        'sInfoFiltered': '(此條件共 _TOTAL_ 項)',
+        'sSearch': '搜索: ',
+        'oPaginate': {
+          'sFirst': '首頁',
+          'sPrevious': '上頁',
+          'sNext': '下頁',
+          'sLast': '尾頁'
+        }
+      }
+
+    });
+  }
+
+  //快速補上圖片預覽樣式 (不敢全補，怕有圖片以外的檔案。)
+  function put_img_preview(input_tag) {
+    input_tag.on('change', function () {
+      FileReader = window.FileReader;
+      var ext = $(this).val().split('.').pop().toLowerCase();
+      var clip = $(this).parent().find("img");
+
+      if ($.inArray(ext, ['png', 'jpg', 'jpeg']) == -1) {
+        $(this).val("");
+        swal('只允許上傳PNG或JPG影像檔');
+        return false;
+      }
+
+      if (FileReader) {
+        var reader = new FileReader(),
+          file = this.files[0];
+
+        if (file.size > 1024 * 1024) {
+          $(this).val("");
+          swal("圖片上傳限制大小為1MB");
+          return false;
+        }
+
+        reader.onload = function (e) {
+          var _v = e.target.result;
+          clip.attr("src", e.target.result);
+          var now_name = "img_" + input_tag.prop("name");
+          $("input[name=" + now_name + "]").remove();
+          $('<input>').prop({
+            type: 'hidden',
+            class: 'virtual_img',
+            name: now_name,
+            id: now_name,
+            value: e.target.result
+          }).appendTo('form');
+        };
+        reader.readAsDataURL(file);
+      } else {
+        path = $(this).val();
+        clip.attr("src", path);
+      }
+    })
+  }
+  //快速補上全版樣式驗證
+  function check_vailidation(input_obj) {
+    var form_validation = $("#form_validation");
+    var error2 = $('.alert-danger', form_validation);
+    var success2 = $('.alert-success', form_validation);
+    var setting = {
+      errorElement: 'span', //預設的提示類型
+      errorClass: 'help-block help-block-error', // 預設的提示CLASS
+      focusInvalid: false, // 是否跳到錯誤位置
+      // ignore: "",  // validate all fields including form hidden input
+      rules: {},
+      messages: {},
+      errorPlacement: function (error, element) {
+        //錯誤元素的放置
+        if (element.parent(".input-group").size() > 0) {
+          error.insertAfter(element.parent(".input-group"));
+        } else if (element.attr("data-error-container")) {
+          error.appendTo(element.attr("data-error-container"));
+        } else if (element.parents('.radio-list').size() > 0) {
+          error.appendTo(element.parents('.radio-list').attr("data-error-container"));
+        } else if (element.parents('.radio-inline').size() > 0) {
+          error.appendTo(element.parents('.radio-inline').attr("data-error-container"));
+        } else if (element.parents('.checkbox-list').size() > 0) {
+          error.appendTo(element.parents('.checkbox-list').attr("data-error-container"));
+        } else if (element.parents('.checkbox-inline').size() > 0) {
+          error.appendTo(element.parents('.checkbox-inline').attr("data-error-container"));
+        } else {
+          error.insertAfter(element); // for other inputs, just perform default behavior
+        }
+      },
+      invalidHandler: function (event, validator) {
+        //錯誤時 送出的情況
+        success2.hide();
+        error2.show();
+      },
+      highlight: function (element) {
+        //元素的錯誤提示效果
+        $(element).closest('.form-group').addClass('has-error');
+      },
+      unhighlight: function (element) {
+        //元素的錯誤移除提示效果(只有移除)
+        $(element).closest('.form-group').removeClass('has-error');
+      },
+      success: function (label) {
+        //元素的正確提示樣式
+        label.closest('.form-group').removeClass('has-error');
+      },
+      submitHandler: function (form) {
+        //送出事件
+        success2.show();
+        error2.hide();
+        // 關閉submit功能,改用ajaxform
+        // form_validation[0].submit();
+      }
+    };
+
+    for (var type in input_obj) {
+      setting[type] = input_obj[type];
+    }
+    form_validation.validate(setting);
+  }
+
+  //取得URL資訊
+  function getUrlVars() {
+    var vars = [],
+      hash;
+    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    for (var i = 0; i < hashes.length; i++) {
+      hash = hashes[i].split('=');
+      vars.push(hash[0]);
+      vars[hash[0]] = hash[1];
+    }
+    return vars;
+  }
+
+  //回上一頁 很多頁的取消會用到
+  function goBack() {
+    window.history.back();
+  }
+
+  //製作一個方便的同上功能 專門給地址使用
+  function like_id(like_id, self_id) {
+    $("#" + self_id).val($("#" + like_id).val());
+    $('select[name=' + self_id + '_county]').val($('select[name=' + like_id + '_county]').val()).trigger('change');
+    $('select[name=' + self_id + '_district]').val($('select[name=' + like_id + '_district]').val()).trigger('change');
+
+  }
+
+  //快速補上已有資料
+  function check_default(type, names, default_value) {
+    if (type == "radio") {
+      $("input[name=" + names + "]").each(function (index, value) {
+        if ($(this).val() == default_value) {
+          $(this).prop("checked", true);
+          $(this).parent("span").prop("class", "checked"); //metronic 看 span 的class
+        }
+      });
+    } else if (type == "datetime") {
+      $("#" + names + "_div").datetimepicker('update', default_value);
+    } else if (type == "input") {
+      $("#" + names).val(default_value);
+    } else if (type == "inputDate") {
+      $("#" + names).val(default_value);
+      $("#" + names).datepicker('setDate', default_value);
+    } else if (type == "inputTime") {
+      $("#" + names).val(default_value);
+      $("#" + names).datetimepicker('setDateTime', default_value);
+    } else if (type == "checkbox") {
+      $("input[name=" + names + "][type=checkbox]").each(function (index, value) {
+        var arr = default_value.split(",");
+        if (inArray($("input[name=" + names + "][type=checkbox]").eq(index).val(), arr)) {
+          $("input[name=" + names + "][type=checkbox]").eq(index).prop("checked", 'checked');
+        }
+      });
+    } else if (type == "select") {
+      var x = 0;
+      $("#" + names).children().each(function () {
+        if ($(this).val() == default_value) {
+          x++;
+          $(this).prop("selected", "true");
+        }
+      });
+      if ($(".bs-select[name=" + names + "]").length > 0) {
+        $("#" + names).selectpicker('val', default_value);
+      }
+    } else if (type == "img") {
+      $("#" + names).parent().find("img").prop("src", default_value);
+    } else if (type == "base64img") {
+      if (default_value == '') {
+        return false;
+      }
+      $("#" + names).parent().find("img").prop("src", default_value);
+      var now_name = "img_" + $("#" + names).prop("name");
+      $("input[name=" + now_name + "]").remove();
+      $('<input>').prop({
+        type: 'hidden',
+        class: 'virtual_img',
+        name: now_name,
+        id: now_name,
+        value: default_value
+      }).appendTo('form');
+    } else if (type == "create_hidden") {
+      $("form").prepend("<input type='hidden' name='" + names + "' value='" + default_value + "'>")
+    } else if (type == "area") {
+      var address = default_value[0];
+      var county = default_value[1];
+      var district = default_value[2];
+
+      $("#" + names).val(address);
+      $('#' + names + '_select').twzipcode('set', {
+        'county': county,
+        'district': district
+      });
+    } else if (type == "placeholder") {
+      $("#" + names).prop("placeholder", default_value);
+    }
+  }
+
+  //判斷是否只有一個TABLE 下載EXCEL檔案
+  function download_excel(file_name, tag_name) {
+    if (!tag_name) {
+      var tag_name = $("table:eq(0)").prop("id");
+    }
+
+    $("#" + tag_name + " td,#" + tag_name + " th").css('border', '#ddd solid 0.05em');
+    $("#" + tag_name + " th").css('background-color', '#f2f2f2');
+
+    $("#" + tag_name + "").table2excel({
+      exclude: ".excludeThisClass",
+      filename: file_name
+    });
+
+    $("#" + tag_name + " td,#" + tag_name + " th").css('border', '#ddd solid 1px');
+  }
+
+  //快速補上已有資料2 arlen修改
+  function check_default2(type, names, default_value) {
+    if (type == "radio") {
+      $("input[name=" + names + "]").each(function (index, value) {
+        if ($(this).val() == default_value) {
+          $(this).prop("checked", true);
+          $(this).parent("span").prop("class", "checked"); //metronic 看 span 的class
+        }
+      });
+    } else if (type == "input") {
+      $("input[name=" + names + "]").val(default_value);
+    } else if (type == "checkbox") {
+      var $tag = $("." + names);
+      $tag.each(function (index, value) {
+        var arr = default_value.split(",");
+        if (arr.indexOf($(this).val()) != -1) {
+          $(this).trigger("click");
+        }
+      });
+    } else if (type == "select") {
+      //正常Select
+      var now_text;
+      $("#" + names).children().each(function () {
+        if ($(this).val() == default_value) {
+          now_text = $(this).text();
+          $(this).prop("selected", "true");
+        }
+      });
+      //autocomplete select
+      $("#" + names).parent("div").find(".filter-option").html(now_text);
+    } else if (type == "img") {
+      $("#" + names).parent().find("img").prop("src", default_value);
+    } else if (type == "base64img") {
+      $("#" + names).parent().find("img").prop("src", default_value);
+      var now_name = "img_" + $("#" + names).prop("name");
+      $("input[name=" + now_name + "]").remove();
+      $('<input>').prop({
+        type: 'hidden',
+        class: 'virtual_img',
+        name: now_name,
+        id: now_name,
+        value: default_value
+      }).appendTo('form');
+    } else if (type == "create_hidden") {
+      $("form").prepend("<input type='hidden' name='" + names + "' value='" + default_value + "'>")
+    }
+  }
+
+  // edit按下去的提示警告,跑修改api
+  function edit_click(url, inpData, name) {
+
+    swal({
+      title: "是否確定要" + name + "?",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "確定"
+    }).then((result) => {
+      if (result.value) {
+        $.ajax({
+          type: 'put',
+          url: url,
+          async: false,
+          cache: true,
+          dataType: 'json',
+          data: inpData,
+          success: function (data) {
+            console.log('ok', data);
+            swal({
+              title: name + '成功!',
+              type: "success"
+            }).then((e) => {
+              location.reload();
+            })
+          },
+          error: function (err) {
+            console.log('error', err);
+            swal(name + '失敗!');
+          }
+        })
+      }
+    });
+  }
+
+  //彈跳視窗
+  function bubble_click(title, content) {
+    BootstrapDialog.show({
+      size: 'size-wide',
+      title: title,
+      message: content
+    });
+  }
+
+  // 上傳檔案
+  function fileUploadFun(uploadID, uploadUrl, imgPathID) {
+    // 上傳檔案
+    $(uploadID).fileupload({
+      url: uploadUrl,
+      dataType: 'json',
+      submit: function (e, data) {
+        swal({
+          title: "上傳中..",
+          showConfirmButton: false,
+          showLoaderOnConfirm: true
+        });
+      },
+      done: function (e, data) {
+        console.log('upload done', data);
+        const obj = data.result.datas;
+        if (data.result.result === 'ok') {
+          console.log("upload ok", obj);
+          $(imgPathID).val(obj.Location);
+          swal("上傳成功!");
+        } else {
+          swal("上傳失敗!");
+        }
+      },
+      progressall: function (e, data) {
+        var progress = parseInt(data.loaded / data.total * 100, 10);
+        console.log("scale--", progress);
+        $('#progress .progress-bar').css(
+          'width',
+          progress + '%'
+        );
+      }
+    }).prop('disabled', !$.support.fileInput).parent()
+      .addClass($.support.fileInput ? undefined : 'disabled');
+  }
+
+  // 表單驗證後刪除不需要的欄位
+  function removeFormCol(formID, removeID) {
+    $(formID).submit(function (e) {
+      if ($(this).valid()) {
+        console.log("sss", removeID);
+        if (removeID) {
+          $(removeID).remove();
+        }
+        if ($("#password").val() === '') {
+          $("#password").remove();
+        }
+        console.log("valid ok");
+      }
+      else {
+        console.log("valid error");
+        return false;
+      }
+    })
+  }
+
+  // form表單使用ajaxform跑api
+  function apiSubmit(formID, type, apiUrl, redirectUrl) {
+    $(formID).ajaxForm({
+      type: type,
+      url: apiUrl,
+      success: function (data) {
+        console.log("ajaxform ok", data);
+        swal({
+          title: '儲存成功!'
+        }).then((result) => {
+          if (result.value) {
+            location.href = redirectUrl;
+          }
+        });
+      },
+      error: function (err) {
+        console.log("ajaxform err", err);
+      }
+    });
+  }
+
+  // 自動帶出帳號email跟id
+  function userAutoComplete(autoID, nameID) {
+    $(autoID).bootcomplete({
+      url: '/api/user/getAllUser',
+      method: "post",
+      minLength: 3,
+      idFieldName: nameID
+    });
+  }
+
+  // select有其他時新增一個input
+  function selectOther(selectID, otherID) {
+    $('#' + selectID).on("change", function () {
+      $(this).prop('name', selectID);
+      $('#' + otherID).addClass('hide').html("");
+      if ($(this).val() == '其他') {
+        $("#" + otherID).append('<input type="text" name="type" class="form-control" placeholder="請輸入新的類型"/>');
+        $(this).removeAttr('name');
+        $('#' + otherID).removeClass('hide');
+      }
+    })
+  }
+
+  //group按下刪除或啟用的提示警告
+  function changeClickGroup(url, $id, active) {
+
+    const inpData = {
+      'adminToken': '<%= (req.session.user) ? req.session.user.token : "" %>',
+      'id': $id,
+      'isActive': active
+    }
+
+    swal({
+      title: "是否確定要刪除?",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "確定"
+      // closeOnConfirm: false
+    }).then((result) => {
+      if (result.value) {
+        $.ajax({
+          type: 'put',
+          url: url,
+          async: false,
+          dataType: 'json',
+          data: inpData,
+          success: function (data) {
+            console.log('ok', data);
+            const ch = changeGroupPoint(active, data.data[0].id);
+          },
+          error: function (err) {
+            console.log('error', err);
+            swal(active + '失敗!');
+          }
+        })
+      }
+    });
+  }
+
+  function changeGroupPoint(active, $group_id) {
+
+    const url = '<%=sails.config.myurl.url%>/map_group/list';
+
+    const inpData = {
+      group_id: $group_id,
+      status: active
+    }
+
+    const $active = (active === "stop") ? "刪除" : "啟用";
+
+    $.ajax({
+      type: "post",
+      async: "false",
+      data: inpData,
+      url: "<%=sails.config.myurl.url%>/api/map_group/changeGroupPoint",
+      success: function (data) {
+        console.log("changeGroupPoint", data);
+        if (data !== 'err') {
+          swal({
+            title: $active + "成功"
+          }).then((result) => {
+            if (result.value) {
+              location.href = url;
+            }
+          });
+        } else {
+          swal({
+            title: $active + "失敗"
+          }).then((result) => {
+            if (result.value) {
+              location.href = url;
+            }
+          });
+        }
+      },
+      error: function (err) {
+        console.log("ajaxform err2", err);
+      }
+    })
+  }
+
+  // 使用api的寄信功能
+  function snedMail(sendUrl, toEmail, toSubject, toText, id) {
+    const inpData = {
+      from: '<%=sails.config.myconf.sendMail.from%>',
+      to: toEmail,
+      subject: toSubject,
+      text: toText
+    }
+
+    console.log('send--', inpData);
+
+    $.ajax({
+      type: 'POST',
+      url: sendUrl,
+      dataType: 'json',
+      data: inpData,
+      async: false,
+      success: function (data) {
+        console.log("send mail ok", data);
+      },
+      error: function (data) {
+        console.info('send mail error');
+      }
+    });
+  }
+
+  // form validator
+  function formValid(formID) {
+    $(formID).submit(function (e) {
+      if ($(this).valid()) {
+        console.log('ok', $(this).valid());
+        return true;
+      }  else {
+        console.log("valid error");
+        return false;
+      }
+    })
+  }
+  // form表單使用ajaxform跑api
+  function ajaxSubmit(formID, type, apiUrl, redirectUrl) {
+    console.log('www', apiUrl);
+    $(formID).ajaxForm({
+      type: type,
+      url: apiUrl,
+      success: function (data) {
+        console.log("ajaxform success", data);
+        if (data.error) {
+          swal('送出失敗');
+          return false;
+        }
+        swal({
+          title: '儲存成功!'
+        }).then((result) => {
+          location.href = redirectUrl;
+        });
+      },
+      error: function (err) {
+        console.log("ajaxform err", err);
+      }
+    });
+  }
+  // 背景執行ajax post修改資料
+  function ajaxPost(url, obj) {
+    $.ajax({
+      type: 'post',
+      url: url,
+      async: false,
+      dataType: 'json',
+      data: obj,
+      success: function (data) {
+        console.log('ajax ok---', data);
+      },
+      error: function (err) {
+        console.log('ajax error---', err);
+      }
+    });
+  }
+  // 取得選取的checkbox值
+  function getCheckbox(name) {
+    let cbxVehicle = [];
+    $(name).each(function (i) {
+      cbxVehicle[i] = $(this).val();
+    });
+    console.log('checked', cbxVehicle);
+    return cbxVehicle;
+  }
+  // swal新增一筆資料
+  function swalAddSubmit() {
+    swal({
+      title: '新增問題類別',
+      input: 'text',
+      showCancelButton: true,
+      confirmButtonText: 'Submit',
+      showLoaderOnConfirm: true,
+      preConfirm: (text) => {
+        return new Promise((resolve) => {
+          if (text == '') {
+            swal.showValidationError(
+              '請輸入資料.'
+            )
+          } else {
+            $.ajax({
+              type: 'POST',
+              url: '/api/question_type',
+              async: false,
+              dataType: 'json',
+              data: {
+                question_name: text,
+                status: "work"
+              },
+              success: function (data) {
+                console.log('add ok', data);
+              },
+              error: function (err) {
+                console.log('error', err);
+                swal.showValidationError(
+                  '寫入失敗.'
+                )
+              }
+            })
+          }
+          resolve();
+        })
+      },
+      allowOutsideClick: false
+    }).then((result) => {
+      if (result.value) {
+        swal({
+          type: 'success',
+          title: '新增成功!',
+          // html: 'Submitted email: ' + result.value
+        }).then((e) => {
+          location.reload();
+        })
+      }
+    })
+  }
+  // swal修改一筆資料
+  function swalEditSubmit($url, $name) {
+    swal({
+      title: '修改問題類別',
+      input: 'text',
+      inputValue: $name,
+      showCancelButton: true,
+      confirmButtonText: 'Submit',
+      showLoaderOnConfirm: true,
+      preConfirm: (text) => {
+        return new Promise((resolve) => {
+          if (text == '') {
+            swal.showValidationError(
+              '請輸入資料.'
+            )
+          } else {
+            $.ajax({
+              type: 'PUT',
+              url: $url,
+              async: false,
+              dataType: 'json',
+              data: {
+                question_name: text,
+                status: "work"
+              },
+              success: function (data) {
+                console.log('add ok', data);
+              },
+              error: function (err) {
+                console.log('error', err);
+                swal.showValidationError(
+                  '寫入失敗.'
+                )
+              }
+            })
+          }
+          resolve();
+        })
+      },
+      allowOutsideClick: false
+    }).then((result) => {
+      if (result.value) {
+        swal({
+          type: 'success',
+          title: '新增成功!',
+          // html: 'Submitted email: ' + result.value
+        }).then((e) => {
+          location.reload();
+        })
+      }
+    })
+  }
+  //
+  function swalSelectSubmit($url, $group_pk) {
+    swal({
+      title: '選擇單位',
+      input: 'select',
+      inputValue: $group_pk,
+      inputOptions: {
+        '1': 'Eten',
+        '2': 'Jizmos Inc',
+        '3': 'AJCService'
+      },
+      inputPlaceholder: 'Select country',
+      showCancelButton: true,
+      inputValidator: (value) => {
+        return new Promise((resolve) => {
+          if (value) {
+            $.ajax({
+              type: 'PUT',
+              url: $url,
+              async: false,
+              dataType: 'json',
+              data: {
+                customer_group_pk: value,
+                status: "work"
+              },
+              success: function (data) {
+                console.log('add ok', data);
+                location.reload();
+              },
+              error: function (err) {
+                console.log('error', err);
+                swal.showValidationError(
+                  '寫入失敗.'
+                )
+              }
+            })
+            resolve();
+          } else {
+            resolve();
+          }
+        })
+      }
+    })
+  }
+
+  var extraObj = $(".fileuploader").uploadFile({
+      url: '/api/upload/sendS3',
+      fileName: "uploadFile",
+      acceptFiles: "*",
+      autoSubmit: false,
+      maxFileSize: 50000 * 1024,
+      maxFileCount: 5,  //可同時上傳檔案數
+      dragDrop: true,  //可否拖拉圖片上傳 預設是FALSE
+      showDelete: true,  //是否顯示刪除鈕 預設FALSE
+      allowedTypes: "jpg,png,gif,mp4",  //限制上傳的格式
+      extraHTML: function (e) {
+        var html = '<div class="form-group">說明: <input type="text" id="description" name="description" class="form-control"><span id="title_string"></div>';
+        return html;
+      },
+      deleteCallback: function (data, pd) {
+        const url = '/api/file/delete_file';
+        const objData = { 'file_pk': data.file_pk };
+        ajaxPost(url, objData);
+        all_file_pk = all_file_pk.filter(function (word) {
+          return word != data.file_pk;
+        });
+      },
+      onSuccess: function (files, data, xhr, pd) {
+        if (data.result === 'ok') {
+          all_file_pk.push(data.file_pk);
+          let descVal = '';
+          $(".ajax-file-upload-filename").each(function (e) {
+            const str = $(this).html();
+            if (str.search(files[0]) > -1) {
+              descVal = $(this).parent(".ajax-file-upload-statusbar").find("input").val();
+            }
+          })
+          const url = '/api/file/edit_file';
+          const objData = { 'file_pk': data.file_pk, 'description': descVal };
+          ajaxPost(url, objData);
+        } else {
+          alert('上傳失敗!');
+        }
+      },
+      onError: function (files, status, errMsg, pd) {
+        console.log('onError', status);
+        $("#eventsmessage").html($("#eventsmessage").html() + "<br/>Error for: " + JSON.stringify(files));
+      },
+      onCancel: function (files, pd) {
+        console.log('onCancel', files);
+        $("#eventsmessage").html($("#eventsmessage").html() + "<br/>Canceled  files: " + JSON.stringify(files));
+      }
+    });
+
+</script>

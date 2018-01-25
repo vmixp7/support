@@ -1,0 +1,87 @@
+<div id="wrapper">
+      <%- partial("../layout/left") %>
+  <div id="page-wrapper">
+    <div class="row">
+      <div class="col-lg-12">
+        <h1 class="page-header">修改留言</h1>
+      </div>
+      <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+
+    <!-- /.row -->
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            修改留言
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-lg-6">
+                <form role="form" id="form_validation" action="<%=submitLink%>" method="POST" >
+<textarea id="content" name="content" class="form-control" ><%= findData.content %></textarea>
+            <%-: {is_require:false, is_readonly:true,  input_ch:"圖片", id_name:"photo1"}|create_input %>
+<%-: {id_name:"uploadFile", img_path: "photo1"}|create_fileUpload %>
+<%-: {id_name:"support_pk", id_value: findData.support_pk } |create_hidden %>
+<%-: {id_name:"reply_pk", id_value: findData.reply_pk } |create_hidden %>
+
+                  <a href="<%=listLink%>" class="btn btn-default">取消</a>
+                  <button type="submit" class="btn btn-primary">送出</button>
+
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- /#page-wrapper -->
+
+</div>
+<!-- /#wrapper -->
+
+<script>
+
+$().ready(function(){
+
+  $("#invalid_but").on('click',function() {
+    const inputObj = {
+        'id': '<%=findData.support_pk%>',
+        'admin_request': $("#text").val(),
+        'status': 'invalid'
+    }
+    swal({
+      title: "是否要作廢?",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "是",
+      closeOnConfirm: false
+    },
+    function(){
+      supportEdit(inputObj,'/support/list');
+    });
+
+  })
+
+  //補上相關欄位
+  check_default('input'    ,'photo1'       ,'<%-: findData, "photo1" | check_obj %>');
+  // form表單處理put
+  ajaxSubmit('#form_validation', 'put', '<%=submitLink + findData.reply_pk%>', '<%=listLink%>');
+  // 上傳檔案
+  fileUploadFun('#uploadFile','/api/upload/reply', '#photo1');
+
+  //補上驗證
+  var input_validation = {
+      // 驗證規則
+      rules: {
+        content: {required: true}
+      }
+  }
+  check_vailidation( input_validation );
+
+});
+</script>

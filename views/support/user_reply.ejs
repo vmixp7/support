@@ -1,0 +1,136 @@
+  <div id="wrapper">
+  <div id="user-page-wrapper">
+    <div class="row" >
+      <p>&nbsp;</p>
+      <p>&nbsp;</p>
+      <div class="col-lg-12" >
+        <h1 class="text-center user_title">波寶客服系統</h1>
+      </div>
+    </div>
+    <p>&nbsp;</p>
+    <div class="row">
+    <div class="col-lg-12">
+      <div class="panel panel-default">
+      <div class="panel-heading">
+          更新時間:<%= moment(findData.updatedAt).format("YYYY-MM-DD HH:mm:ss") %>
+      </div>
+      <div class="panel-body">
+        <h1 id="quest_title"><%= findData.title %></h1>
+        <p><%= findData.sup_context %></p>
+        <% if (findData.photo1) { %>
+          <a href="<%= findData.photo1 %>" target="_blank"/>圖片連結</a>
+        <% } %>
+        <hr>
+        <div class="row quest_content">
+          <div class="col-lg-6">
+            狀態:<%= findData.status_name %><br>
+            姓名:<%= findData.sup_name %><br>
+            E-mail:<%= findData.sup_email %><br>
+            電話:<%= findData.sup_tel %><br>
+            所在地:<%= findData.nation_name %><br>
+            電信營運商:<%= findData.sup_carrier %><br>
+            購買地點:<%= findData.buy_address %><br>
+            手機品牌型號:<%= findData.mobile_type %>
+          </div>
+          <div class="col-lg-6">
+            波寶裝置:<%= findData.deviceName %><br>
+            客服人員:<%= findData.customer_pk %><br>
+            手機OS:<%= findData.os_mobile %><br>
+            手機版本:<%= findData.os_app %><br>
+            APP版本:<%= findData.version_mobile %><br>
+            問題類型:<%= findData.questionName %><br>
+            問題來源:<%= findData.source %><br>
+            建立時間:<%= moment(findData.createdAt).format("YYYY-MM-DD HH:mm:ss") %>
+          </div>
+        </div>
+      </div>
+
+      </div>
+
+<%
+for(let i in replyArray) {
+const contentStr = replyArray[i].content;
+const userLink = (replyArray[i].role === 'user') ? '/img/user.png' : '/img/miss.png';
+%>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <div class="row">
+          <div class="col-md-6">
+            <p>發文者:<%= (replyArray[i].role === 'user') ? replyArray[i].email : '客服小姐' %> | 更新時間:<%= moment(replyArray[i].updatedAt).format("YYYY-MM-DD HH:mm:ss") %></p>
+          </div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="col-md-3 user_photo">
+            <img src="<%= userLink %>" />
+          </div>
+          <div class="col-md-9">
+            <pre>
+              <p class="reply_word"><%= contentStr %></p>
+            </pre>
+            <% if (replyArray[i].photo1) { %>
+            <a href="<%= replyArray[i].photo1 %>" target="_blank"/>圖片連結</a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+<% } %>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3>回覆</h3>
+        </div>
+        <div class="panel-body">
+
+      <div class="row">
+        <div class="col-lg-12">
+
+            <form role="form" id="form_validation" >
+
+            <%-: {is_require:true, is_readonly:false,    input_ch:'內容', id_name:"content"}|create_textarea %>
+            <%-: {is_require:false, is_readonly:true,  input_ch:"圖片", id_name:"photo1"}|create_input %>
+            <%-: {id_name:"uploadFile", img_path: "photo1"}|create_fileUpload %>
+            <%-: {id_name:"support_pk", id_value: findData.support_pk } |create_hidden %>
+            <%-: {id_name:"email", id_value: findData.sup_email } |create_hidden %>
+            <%-: {id_name:"role", id_value: 'user' } |create_hidden %>
+            <%-: {id_name:"token", id_value: findData.token } |create_hidden %>
+
+            <a href="javascript:;" id="resetBtn" class="btn btn-default">取消</a>
+            <button type="submit" class="btn btn-primary">送出</button>
+            </form>
+        </div>
+      </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+  </div>
+  <!-- /#page-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+
+<script>
+
+$().ready(function() {
+  // form表單處理
+  formValid('#form_validation');
+  ajaxSubmit('#form_validation', 'post', '/reply/user_reply', '');
+  // 上傳檔案
+  fileUploadFun('#uploadFile','/api/upload/userSendS3', '#photo1');
+  //補上驗證
+  var input_validation = {
+      // 驗證規則
+      rules: {
+          content: {required: true}
+      },
+      messages: {
+      }
+  }
+  check_vailidation( input_validation );
+
+  $("#resetBtn").on("click",function(){
+    $("#content,#photo1").val("");
+  })
+});
+</script>

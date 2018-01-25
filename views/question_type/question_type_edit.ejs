@@ -1,0 +1,137 @@
+	<div id="wrapper">
+        <%- partial("../layout/left") %>
+		<div id="page-wrapper">
+			<div class="row">
+				<div class="col-lg-12">
+					<h1 class="page-header"><%=big_title%></h1>
+				</div>
+				<!-- /.col-lg-12 -->
+			</div>
+			<!-- /.row -->
+
+			<!-- /.row -->
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<%=bar_title%>
+						</div>
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-lg-6">
+									<form role="form" id="form_validation" action="<%=link_to_submit%>" method="POST" >
+
+<%-: {is_require:false, is_readonly:true,    input_ch:"Email", id_name:"to"}|create_input %>
+<%-: {is_require:false, is_readonly:true,    input_ch:"問題內容", id_name:"context"}|create_textarea %>
+<%-: {is_require:true, is_readonly:false,    input_ch:"客服回應內容", id_name:"text"}|create_textarea %>
+<%-: {id_name:"subject", id_value: sails.config.myconf.sendMail.subject } |create_hidden %>
+
+										<a href="<%=link_to_list%>" class="btn btn-default">取消</a>
+										<button type="submit" class="btn btn-primary"><%=submit_but%></button>
+										<a href="javascript:;" id="invalid_but" class="btn btn-danger">作廢</a>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+		<!-- /#page-wrapper -->
+
+	</div>
+	<!-- /#wrapper -->
+
+<script>
+
+$().ready(function(){
+
+		$("#invalid_but").on('click',function() {
+			const inputObj = {
+					'id': '<%=findData.support_pk%>',
+					'admin_request': $("#text").val(),
+					'status': 'invalid'
+			}
+			swal({
+			  title: "是否要作廢?",
+				type: "warning",
+			  showCancelButton: true,
+			  confirmButtonColor: "#DD6B55",
+			  confirmButtonText: "是",
+			  closeOnConfirm: false
+			},
+			function(){
+			  supportEdit(inputObj,'/support/list');
+			});
+
+		})
+
+		//補上相關欄位
+    check_default('input'    ,'to'       ,'<%-: findData, "sup_email" | check_obj %>');
+		const sup_context = `<%=findData.sup_context%>`;
+		$("#context").val(sup_context);
+
+		// 表單驗證後刪除不需要的欄位
+	  removeFormCol('#form_validation','#context');
+		// form表單處理put
+	  supportSubmit('#form_validation', 'post', '<%=mail_to_submit%>', '<%=link_to_list%>');
+
+		// form表單使用ajaxform跑api
+	  function supportSubmit(formID, type, apiUrl, redirectUrl) {
+	    $(formID).ajaxForm({
+	      type: type,
+	      url: apiUrl,
+	      success: function(data) {
+	        console.log("ajaxform ok",data);
+					const inputObj = {
+							'id': '<%=findData.support_pk%>',
+							'admin_request': $("#text").val(),
+							'status': 'request'
+					}
+					supportEdit(inputObj,redirectUrl);
+	      },
+	      error: function(err) {
+	        console.log("ajaxform err",err);
+	      }
+	    });
+	  }
+
+    //補上驗證
+    var input_validation = {
+        // 驗證規則
+        rules: {
+					text: {required: true}
+				}
+    }
+    check_vailidation( input_validation );
+
+		function supportEdit(dataObj,redirectUrl) {
+			$.ajax({
+				type: 'post',
+				url: '/api/support/send_edit',
+				dataType: 'json',
+				data: dataObj,
+				success:function(data){
+					console.log("send mail",data);
+					if(!data) {
+						swal('修改失敗!');
+					} else {
+						swal({
+							title: "修改成功!",
+							type: "success"
+						},
+						function() {
+							location.href = redirectUrl;
+						})
+					}
+				},
+				error: function(data){
+					console.info('send mail error');
+					swal('送出失敗!');
+				}
+			});
+		}
+
+});
+</script>

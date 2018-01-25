@@ -1,0 +1,117 @@
+<div id="wrapper">
+
+<%- partial("../layout/left") %>
+
+  <div id="page-wrapper">
+    <div class="row">
+      <div class="col-lg-12">
+        <h1 class="page-header"><%=big_title%></h1>
+      </div>
+      <!-- /.col-lg-12 -->
+    </div>
+    <div class="row">
+      <div class="col-lg-12">
+          <a class="btn btn-primary" href="/support/add" role="button"><%= sails.__({ phrase: 'create', locale: sails.config.myconf.lang[0] }) %></a>
+      </div>
+    </div>
+    <br>
+    <!-- /.row -->
+    <div class="row">
+      <div class="col-lg-12">
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <%=bar_title%>
+          </div>
+          <!-- /.panel-heading -->
+          <div class="panel-body">
+
+            <div class="dataTable_wrapper">
+              <table class="table table-striped table-bordered table-hover" id="dataTables-example" width="100%">
+                <thead>
+                  <tr>
+                    <th>流水號</th>
+                    <th>建立時間</th>
+                    <th>所在地</th>
+                    <th>問題來源</th>
+                    <th>姓名</th>
+                    <th>E-mail</th>
+                    <th>主旨</th>
+                    <th>狀態</th>
+                    <th>最後更新時間</th>
+                    <!-- <th>電話</th>
+                    <th>電信營運商</th>
+                    <th>內文</th>
+                    <th>購買地點</th>
+                    <th>手機品牌型號</th>
+                    <th>波寶裝置</th>
+                    <th>手機OS</th>
+                    <th>手機版本</th>
+                    <th>APP版本</th>
+                    <th>問題類型</th> -->
+                    <th>編輯</th>
+                    <!-- <th>優先權</th> -->
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <!-- /.table-responsive -->
+          </div>
+          <!-- /.panel-body -->
+        </div>
+        <!-- /.panel -->
+      </div>
+      <!-- /.col-lg-12 -->
+    </div>
+  </div>
+  <!-- /#page-wrapper -->
+</div>
+  <script>
+  $(document).ready(function() {
+
+    const createdRowData = function(row, data, index) {
+      let bgcolor = '';
+      switch(data.status_name)
+      {
+        case '處理完成':
+          bgcolor = '#02dcff';
+          break;
+        case '處理中':
+          bgcolor = '#b5f8fbfa';
+          break;
+        case '回覆通知':
+          bgcolor = '#fff829';
+          break;
+        default:
+          // bgcolor = '#EEE000';
+      }
+      $(row).css({"background-color":bgcolor});
+    }
+
+    const column_array = [
+        { "mData": "support_pk" },
+        { "mData": "createdAt" },
+        { "mData": "nation_name" },
+        { "mData": "source" },
+        { "mData": "sup_name" },
+        { "mData": "sup_email" },
+        { "mData": "title" },
+        { "mData": "status_name" },
+        { "mData": "updatedAt" },
+        // { "mData": "priority" },
+        // { "mData": "sup_tel" },
+        // { "mData": "sup_carrier" },
+        // { "mData": "sup_context" },
+        // { "mData": "buy_address" },
+        // { "mData": "mobile_type" },
+        // { "mData": "model_pk" },
+        // { "mData": "os_mobile" },
+        // { "mData": "os_app" },
+        // { "mData": "version_mobile" },
+        // { "mData": "question_type" },
+        { "mData": "finalModify", orderable: false }
+    ];
+    create_ajaxtable('dataTables-example', '<%=viewLink%>', column_array, createdRowData);
+
+  });
+  </script>

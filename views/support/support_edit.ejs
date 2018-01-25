@@ -1,0 +1,266 @@
+<div id="wrapper">
+	<%- partial("../layout/left") %>
+		<div id="page-wrapper">
+			<div class="row">
+				<div class="col-lg-12">
+					<h1 class="page-header"><%=big_title%></h1>
+				</div>
+				<!-- /.col-lg-12 -->
+			</div>
+			<!-- /.row -->
+
+			<!-- /.row -->
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<%=bar_title%>
+						</div>
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-lg-6">
+									<form role="form" id="form_validation" action="<%=link_to_submit%>" method="POST">
+
+										<%-: {is_require:true, is_readonly:false,    input_ch:"主旨", id_name:"title"}|create_input %>
+											<%-: {is_require:true, is_readonly:false,    input_ch:"問題來源", id_name:"source", input_data: sails.config.myconf.source }|create_select %>
+												<!-- <%-: {is_require:true, is_readonly:false,    input_ch:"優先權", id_name:"priority", input_data: sails.config.myconf.priority }|create_select %> -->
+												<%-: {is_require:true, is_readonly:false,    input_ch:"客戶姓名", id_name:"sup_name"}|create_input %>
+													<%-: {is_require:false, is_readonly:false,    input_ch:"電話", id_name:"sup_tel"}|create_input %>
+														<%-: {is_require:true, is_readonly:false,    input_ch:"Email", id_name:"sup_email"}|create_input %>
+															<%-: {is_require:true, is_readonly:false,    input_ch:"所在地", id_name:"nation_pk", input_data: nationArr }|create_select %>
+																<%-: {is_require:false, is_readonly:false,    input_ch:"電信營運商", id_name:"sup_carrier"}|create_input %>
+																	<div class="form-group">
+																		<label>內文<span class="required">*</span></label>
+																		<textarea id="sup_context" name="sup_context" class="form-control"><%= findData.sup_context %></textarea>
+																	</div>
+																			<%-: {is_require:false, is_readonly:false,    input_ch:"購買地點", id_name:"buy_address"}|create_input %>
+																				<%-: {is_require:false, is_readonly:false,    input_ch:"手機品牌型號", id_name:"mobile_type"}|create_input %>
+																					<div class="form-group">
+																						<label class="control-label">產品類別<span class="required" aria-required="true">*</span></label><br>
+																						<% for(let i in deviceArr) {
+																							const deviceStr = findData.device_model_arr;
+																							const devCheck =  ( deviceStr.indexOf(deviceArr[i].value) > -1 ) ? 'checked' : '';
+																						%>
+																							<label class="modelcheckbox checkbox-inline">
+										  <input type="checkbox" name="models[]" value="<%=deviceArr[i].value%>" <%= devCheck %> > <%=deviceArr[i].text%>
+										</label>
+																							<% }　%>
+																					</div>
+																					<div class="form-group">
+																						<label class="control-label">購買問題<span class="required" aria-required="true">*</span></label><br>
+																						<% for(let i in questArr) {
+																							const questStr = findData.question_type_arr;
+																							const devCheck =  ( questStr.indexOf(questArr[i].question_type_pk) > -1 ) ? 'checked' : '';
+																						%>
+																							<label class="modelcheckbox checkbox-inline">
+										  <input type="checkbox" name="questions[]" value="<%= questArr[i].question_type_pk %>" <%= devCheck %> > <%= questArr[i].question_name %>
+										</label>
+																							<% }　%>
+																					</div>
+																					<%-: {is_require:false, is_readonly:false,    input_ch:"手機OS", id_name:"os_mobile", input_data: sails.config.myconf.phone_os }|create_select %>
+																						<%-: {is_require:false, is_readonly:false,    input_ch:"手機版本", id_name:"version_mobile"}|create_input %>
+																							<%-: {is_require:false, is_readonly:false,    input_ch:"APP版本", id_name:"os_app"}|create_input %>
+																								<%-: {is_require:false, is_readonly:false,    input_ch:"狀態", id_name:"status", input_data: statusArr } | create_select %>
+																									<%-: {id_name:"customer_pk", id_value: '1' } |　create_hidden %>
+																										<%-: {id_name:"device_model_arr", id_value: '' } |create_hidden %>
+																											<%-: {id_name:"question_type_arr", id_value: '' } |create_hidden %>
+																											<button id="formSubmit" type="submit" class="btn btn-primary hidden">
+																												<%=submit_but%>
+																											</button>
+
+									</form>
+
+									<div class="form-group">
+										<div class="fileuploader"></div>
+										<a href="javascript:;" id="extrabutton" class="btn btn-success">上傳檔案</a>
+									</div>
+									<div class="form-group">
+										<a href="<%=link_to_list%>" class="btn btn-default">取消</a>
+										<a id="triggerSubmit" href="javascript:;" class="btn btn-primary">
+										  <%=submit_but%>
+										</a>
+									</div>
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+		<!-- /#page-wrapper -->
+
+</div>
+<!-- /#wrapper -->
+
+<script>
+
+var extraObj = $(".fileuploader").uploadFile({
+			url: '/api/upload/sendS3',
+			fileName: "uploadFile",
+			returnType: "json",
+			acceptFiles: "*",
+			autoSubmit: false,
+			maxFileSize: 50000 * 1024,
+			showPreview:true,
+			previewHeight: "100px",
+ 			previewWidth: "100px",
+			maxFileCount: 5,  //可同時上傳檔案數
+			dragDrop: true,  //可否拖拉圖片上傳 預設是FALSE
+			showDelete: true,  //是否顯示刪除鈕 預設FALSE
+			allowedTypes: "jpg,png,gif,mp4",  //限制上傳的格式
+			onLoad:function(obj) {
+				// $(".fileuploader").html($(".fileuploader").html()+"<br/>Widget Loaded:");
+				console.log('111',obj);
+				obj.createProgress('wwwwwwwwwwwwwww');
+				// obj.existingFileNames = ['aaaaaaaa','bbbbbbbbbb'];
+				// obj.createProgress = obj.createProgress;
+				// html = '';
+				// 	html += '<div class="ajax-file-upload-statusbar" style="width: 400px;">';
+				// 	html +=     '<img class="ajax-file-upload-preview" src="" />';
+				// 	html +=     '<div class="ajax-file-upload-filename">3). p56YoaCbk56W.jpg (29.54 KB)</div>';
+				// 	html +=     '<div class="extrahtml">';
+				// 	html +=         '<div class="form-group">';
+				// 	html +=             '說明: <input type="text" id="description" name="description" class="form-control" />';
+				// 	html +=                 '<span id="title_string"></span>';
+				// 	html +=         '</div>';
+				// 	html +=     '</div>';
+				// 	html +=     '<div class="ajax-file-upload-progress" style="">';
+				// 	html +=         '<div class="ajax-file-upload-bar" style="width: 100%;"></div>';
+				// 	html +=     '</div>';
+				// 	html +=     '<div class="ajax-file-upload-red" style="">Delete</div>';
+				// 	html += '</div>';
+				// 	$(".ajax-file-upload-container").append(html);
+				},
+			afterUploadAll:function(obj){
+				// $("#eventsmessage").html($("#eventsmessage").html()+"<br/>All files are uploaded");
+				console.log('222',obj);
+			},
+			extraHTML: function (e) {
+			var html = '<div class="form-group">說明: <input type="text" id="description" name="description" class="form-control"><span id="title_string"></div>';
+			return html;
+			},
+			deleteCallback: function (data, pd) {
+			const url = '/api/file/delete_file';
+			const objData = { 'file_pk': data.file_pk };
+			ajaxPost(url, objData);
+			all_file_pk = all_file_pk.filter(function (word) {
+				return word != data.file_pk;
+			});
+			},
+			onSuccess: function (files, data, xhr, pd) {
+			if (data.result === 'ok') {
+				all_file_pk.push(data.file_pk);
+				let descVal = '';
+				$(".ajax-file-upload-filename").each(function (e) {
+				const str = $(this).html();
+				if (str.search(files[0]) > -1) {
+					descVal = $(this).parent(".ajax-file-upload-statusbar").find("input").val();
+				}
+				})
+				const url = '/api/file/edit_file';
+				const objData = { 'file_pk': data.file_pk, 'description': descVal };
+				ajaxPost(url, objData);
+			} else {
+				alert('上傳失敗!');
+			}
+			},
+			onError: function (files, status, errMsg, pd) {
+			console.log('onError', status);
+			$("#eventsmessage").html($("#eventsmessage").html() + "<br/>Error for: " + JSON.stringify(files));
+			},
+			onCancel: function (files, pd) {
+			console.log('onCancel', files);
+			$("#eventsmessage").html($("#eventsmessage").html() + "<br/>Canceled  files: " + JSON.stringify(files));
+			}
+		});
+	$().ready(function() {
+
+		let all_file_pk = [];
+		$("#triggerSubmit").on("click", function () {
+			$("#formSubmit").trigger("click");
+		})
+
+		//補上相關欄位
+		check_default('input', 'title', '<%-: findData, "title" | check_obj %>');
+		check_default('select', 'source', '<%-: findData, "source" | check_obj %>');
+		check_default('input', 'sup_name', '<%-: findData, "sup_name" | check_obj %>');
+		check_default('input', 'sup_tel', '<%-: findData, "sup_tel" | check_obj %>');
+		check_default('input', 'sup_email', '<%-: findData, "sup_email" | check_obj %>');
+		check_default('select', 'nation_pk', '<%-: findData, "nation_pk" | check_obj %>');
+		check_default('input', 'sup_carrier', '<%-: findData, "sup_carrier" | check_obj %>');
+		check_default('input', 'buy_address', '<%-: findData, "buy_address" | check_obj %>');
+		check_default('input', 'mobile_type', '<%-: findData, "mobile_type" | check_obj %>');
+		check_default('select', 'os_mobile', '<%-: findData, "os_mobile" | check_obj %>');
+		check_default('input', 'version_mobile', '<%-: findData, "version_mobile" | check_obj %>');
+		check_default('input', 'mobile_type', '<%-: findData, "mobile_type" | check_obj %>');
+		check_default('input', 'os_app', '<%-: findData, "os_app" | check_obj %>');
+		check_default('select', 'status', '<%-: findData, "status" | check_obj %>');
+
+		$('#form_validation').submit(function(e) {
+			const model = getCheckbox('input:checkbox:checked[name="models[]"]');
+			const quest = getCheckbox('input:checkbox:checked[name="questions[]"]');
+			if (!$(this).valid()) {
+				console.log("valid error");
+				return  false;
+			} 
+			else 
+				if (model.length === 0) {
+					console.log("model error");
+					swal('產品類別為必填');
+					return  false;
+				} 
+			else 
+				if (quest.length === 0) {
+					console.log("quest error");
+					swal('問題類別為必填');
+					return  false;
+				} 
+			else  {
+				$("#device_model_arr").val(model);
+				$("#question_type_arr").val(quest);
+				return  true;
+			}
+		})
+
+		// form表單處理
+		ajaxSubmit('#form_validation', 'put', '<%=link_to_submit%><%=findData.support_pk%>', '<%=link_to_list%>');
+
+		//補上驗證
+		var input_validation = {
+			// 驗證規則
+			rules: {
+				title: {
+					required: true
+				},
+				source: {
+					required: true
+				},
+				// priority: {required: true},
+				sup_name: {
+					required: true
+				},
+				sup_email: {
+					required: true,
+					email: true
+				},
+				sup_context: {
+					required: true
+				},
+				nation_pk: {
+					required: true
+				}
+			},
+			messages: {}
+		}
+		check_vailidation(input_validation);
+
+
+
+
+		$("#extrabutton").click(function () {
+			extraObj.startUpload();
+		});
+	});
+</script>

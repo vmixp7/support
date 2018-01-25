@@ -1,0 +1,83 @@
+body{
+	font-family: "Helvetica Neue", Helvetica, Arial, "微軟正黑體", "Microsoft JhengHei", sans-serif;
+}
+.sidebar ul li a{
+	color: #868686;
+}
+
+h1, .sidebar ul li a.active {
+	color: #e25931;/*主色*/
+}
+.navbar-brand{
+	padding: 6px 15px
+}
+
+.nav>li.active>a {
+	color: #23527c;
+	/*background-color: #eee;*/
+}
+#dataTables-example img{
+	height:100px;
+}
+.required{
+	color:#ff0000
+}
+.tab-content>.active{
+	padding: 20px;
+}
+.radio_name{
+	width: 120px;
+}
+.input_datetime{
+	float: none;
+}
+textarea.form-control{
+	height:200px;
+}
+.reply_word{
+	color:#999999;
+}
+pre{
+background-color: #FFFFFF;
+border: none;
+padding: 0;
+}
+.checkbox-inline{padding-right: 10px;}
+.checkbox-inline+.checkbox-inline{margin-left: 0;}
+.navbar-static-top{
+	background-color: #ff5353;
+	/*background-color: #9fc9dc;	#*/
+}
+#logo-word{
+	color:#FFFFFF;
+	margin-left: 20px;
+	position: relative;
+	top: 20px;
+}
+.navbar-top-links li a{color:#ffffff;}
+#quest_title{color: #337ab7;}
+.quest_content{color: #999999;}
+.user_photo{
+	width:150px;
+	background: #eeeeee;
+}
+.user_photo img{
+	width:100%
+}
+#user-page-wrapper{
+	position: inherit;
+    /* margin: 0 0 0 250px; */
+    padding: 0 30px;
+    border-left: 1px solid #e7e7e7;
+}
+.fullBg.user {
+    background: linear-gradient(to top right, #ff4e50 10%, #ee5829 60%, #ede574 120%);
+}
+.user_title {
+	color: #FFF;
+}
+.page_bar{
+	position: absolute;
+  bottom: 0px;
+  right: 15px;
+}

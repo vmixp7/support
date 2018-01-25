@@ -1,0 +1,125 @@
+<%
+  function condToMenu( CondObj ){
+    var inputTitle = CondObj.Btitle;
+    var inputCond = CondObj.Detail;
+    var LiArray = "";
+    var classActive = "";
+    if( _.indexOf(_.map(inputCond,"url"), nowLink)!="-1" ){
+      classActive = 'class="active"';
+    }
+
+    for(var key in inputCond){
+        var conClass = '';
+        var condUrl = inputCond[key]["url"];
+        var condTitle = inputCond[key]["title"];
+      if(_.indexOf( condUrl, nowLink)!="-1"){
+        conClass ='class="active"';
+      }
+
+      LiArray +=`
+        <li ${conClass} >
+          <a href="${condUrl}">${condTitle}</a>
+        </li>
+      `;
+    }
+
+    var returnString = `
+      <li ${classActive}>
+        <a href="javascript:;">
+          <span class="${CondObj.Icon}"></span>
+          ${inputTitle}
+          <span class="fa arrow"></span>
+        </a>
+
+        <ul class="nav nav-second-level">
+          ${LiArray}
+        </ul>
+      </li>
+    `;
+
+    return returnString;
+  }
+
+  var condObj1={
+    Btitle : "系統設定",
+    Icon: "glyphicon glyphicon-cog",
+    Detail : [
+      {url: "/question_type/list", title:"問題分類"},
+      {url: "/nation/list", title:"客服管理"}
+    ]
+  }
+
+  var condObj2={
+    Btitle : "問題選單",
+    Icon: "glyphicon glyphicon-user",
+    Detail : [
+      {url: "/support/list", title:"問題列表"}
+    ]
+  }
+
+
+
+%>
+  <!-- Navigation -->
+  <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+    <div style="width:50%">
+      <h1 id="logo-word">Support System</h1>
+      <!-- <a class="navbar-brand" href="/"><img src="/img/LOGO-orange.png" height="30" alt="" style="margin-top:2px"></a> -->
+    </div>
+
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      </div>
+      <!-- /.navbar-header -->
+      <!--歡迎詞START-->
+      <ul class="nav navbar-top-links navbar-right">
+        <li>
+          <div class="dropdown">
+            <a id="dLabel" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+          Hi, <%= (req.session.user) ? req.session.user.name : "沒登入" %>
+          <i class="glyphicon glyphicon-user"></i>
+          <span class="caret"></span>
+        </a>
+            <ul id="aaa" class="dropdown-menu" aria-labelledby="dLabel">
+              <li>
+                <a href="/admin/change_pass">修改密碼</a>
+              </li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <a href="/logout">
+      <span>登出</span>
+      <i class="fa fa-sign-out fa-fw"></i>
+      </a>
+        </li>
+        <!-- /.dropdown -->
+      </ul>
+
+    <!-- /.navbar-top-links -->
+    <!--歡迎詞end-->
+    <div class="navbar-default sidebar" role="navigation">
+      <div class="sidebar-nav navbar-collapse">
+        <ul class="nav" id="side-menu">
+          <!--選單區start-->
+          <% if (req.session.user) { %>
+          <% if (req.session.user.role === 'admin' || req.session.user.role === 'master') { %>
+          <%- condToMenu( condObj1 ) %>
+          <%- condToMenu( condObj2 ) %>
+          <% } else if (req.session.user.role === 'customer') { %>
+          <%- condToMenu( condObj2 ) %>
+          <% } %>
+          <% } %>
+          <!--選單區end-->
+        </ul>
+      </div>
+      <!-- /.sidebar-collapse -->
+    </div>
+    <!-- /.navbar-static-side -->
+
+  </nav>

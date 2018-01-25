@@ -1,0 +1,15 @@
+{
+	"Welcome": "Welcome",
+	"A brand new app.": "A brand new app.",
+	"question type": "問題類型",
+	"priority": "優先權",
+	"low": "低",
+	"normal": "中",
+	"high": "高",
+	"question source": "問題來源",
+	"create": "新增",
+	"modify": "修改",
+	"delete": "刪除",
+	"reply": "回覆",
+	"status": "狀態"
+}

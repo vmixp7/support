@@ -1,0 +1,176 @@
+<div id="wrapper">
+  <%- partial("../layout/left") %>
+    <div id="page-wrapper">
+      <div class="row">
+        <div class="col-lg-12">
+          <h1 class="page-header">
+            <%=big_title%>
+          </h1>
+        </div>
+        <!-- /.col-lg-12 -->
+      </div>
+      <!-- /.row -->
+
+      <!-- /.row -->
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <%=bar_title%>
+            </div>
+
+            <div class="panel-body">
+              <div class="row">
+                <div class="col-lg-6">
+                  <form role="form" id="form_validation" action="<%=link_to_submit%>" method="POST">
+
+                    <%-: {is_require:true, is_readonly:false,    input_ch:"主旨", id_name:"title"}|create_input %>
+                      <%-: {is_require:true, is_readonly:false,    input_ch:"問題來源", id_name:"source", input_data: sails.config.myconf.source }|create_select %>
+                        <!-- <%-: {is_require:true, is_readonly:false,    input_ch:"優先權", id_name:"priority", input_data: sails.config.myconf.priority }|create_select %> -->
+                        <%-: {is_require:true, is_readonly:false,    input_ch:"客戶姓名", id_name:"sup_name"}|create_input %>
+                          <%-: {is_require:false, is_readonly:false,    input_ch:"電話", id_name:"sup_tel"}|create_input %>
+                            <%-: {is_require:true, is_readonly:false,    input_ch:"Email", id_name:"sup_email"}|create_input %>
+                              <%-: {is_require:true, is_readonly:false,    input_ch:"所在地", id_name:"nation_pk", input_data: nationArr }|create_select %>
+                                <%-: {is_require:false, is_readonly:false,    input_ch:"電信營運商", id_name:"sup_carrier"}|create_input %>
+                                  <%-: {is_require:true, is_readonly:false,    input_ch:"內文", id_name:"sup_context"}|create_textarea %>
+                                    <%-: {is_require:false, is_readonly:false,    input_ch:"購買地點", id_name:"buy_address"}|create_input %>
+                                      <div class="form-group">
+                                        <label class="control-label">產品類別
+                                          <span class="required" aria-required="true">*</span>
+                                        </label>
+                                        <br>
+                                        <% for(let i in deviceArr) { %>
+                                          <label class="modelcheckbox checkbox-inline">
+                                            <input type="checkbox" name="models[]" value="<%=deviceArr[i].value%>">
+                                            <%=deviceArr[i].text%>
+                                          </label>
+                                          <% }　%>
+                                      </div>
+                                      <div class="form-group">
+                                        <label class="control-label">購買問題
+                                          <span class="required" aria-required="true">*</span>
+                                        </label>
+                                        <br>
+                                        <% for(let i in questArr) { %>
+                                          <label class="modelcheckbox checkbox-inline">
+                                            <input type="checkbox" name="questions[]" value="<%= questArr[i].question_type_pk %>">
+                                            <%= questArr[i].question_name %>
+                                          </label>
+                                          <% }　%>
+                                      </div>
+
+
+                                      <%-: {is_require:false, is_readonly:false,    input_ch:"手機品牌型號", id_name:"mobile_type"}|create_input %>
+                                        <%-: {is_require:true, is_readonly:false,    input_ch:"手機OS", id_name:"os_mobile", input_data: sails.config.myconf.phone_os }|create_select %>
+                                          <%-: {is_require:false, is_readonly:false,    input_ch:"手機版本", id_name:"version_mobile"}|create_input %>
+                                            <%-: {is_require:false, is_readonly:false,    input_ch:"APP版本", id_name:"os_app"}|create_input %>
+                                              <%-: {id_name:"customer_pk", id_value: req.session.user.customer_pk } |create_hidden %>
+                                                <%-: {id_name:"status", id_value: 1 } |create_hidden %>
+                                                  <%-: {id_name:"device_model_arr", id_value: '' } |create_hidden %>
+                                                    <%-: {id_name:"question_type_arr", id_value: '' } |create_hidden %>
+                                                      <%-: {id_name:"files", id_value: '' } |create_hidden %>
+                                                        <button id="formSubmit" type="submit" class="btn btn-primary hidden">
+                                                          <%=submit_but%>
+                                                        </button>
+
+                  </form>
+
+                  <div class="form-group">
+                    <div class="fileuploader"></div>
+                    <a href="javascript:;" id="extrabutton" class="btn btn-success">上傳檔案</a>
+                  </div>
+
+                  <div class="form-group">
+                    <a href="<%=link_to_list%>" class="btn btn-default">取消</a>
+                    <a id="triggerSubmit" href="javascript:;" class="btn btn-primary">
+                      <%=submit_but%>
+                    </a>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <!-- /#page-wrapper -->
+</div>
+<!-- /#wrapper -->
+
+<script>
+  $().ready(function () {
+    let all_file_pk = [];
+    $("#triggerSubmit").on("click", function () {
+      $("#formSubmit").trigger("click");
+    })
+
+    // 驗證表單
+    $('#form_validation').submit(function (e) {
+      const model = getCheckbox('input:checkbox:checked[name="models[]"]');
+      const quest = getCheckbox('input:checkbox:checked[name="questions[]"]');
+      if (!$(this).valid()) {
+        console.log("valid error");
+        console.log("all_file_pk", all_file_pk);
+        return false;
+      }
+      else
+        if (model.length === 0) {
+          console.log("model error");
+          swal('產品類別為必填');
+          return false;
+        }
+        else
+          if (quest.length === 0) {
+            console.log("quest error");
+            swal('問題類別為必填');
+            return false;
+          }
+          else {
+            $("#device_model_arr").val(model);
+            $("#question_type_arr").val(quest);
+            $("#files").val(all_file_pk);
+            return true;
+          }
+    })
+    // 送出表單
+    ajaxSubmit('#form_validation', 'post', '<%=link_to_submit%>', '<%=link_to_list%>');
+    //補上驗證
+    var input_validation = {
+      // 驗證規則
+      rules: {
+        // priority: {required: true},
+        title: {
+          required: true
+        },
+        source: {
+          required: true
+        },
+        sup_name: {
+          required: true
+        },
+        sup_email: {
+          required: true,
+          email: true
+        },
+        sup_context: {
+          required: true
+        },
+        nation_pk: {
+          required: true
+        },
+        os_mobile: {
+          required: true
+        }
+      },
+      messages: {}
+    }
+    check_vailidation(input_validation);
+
+    $("#extrabutton").click(function () {
+      extraObj.startUpload();
+    });
+
+  });
+</script>
